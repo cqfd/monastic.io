@@ -204,6 +204,7 @@ Here's the code, using Haskell's list monad:
 
 <code>
 {% highlight haskell %}
+pset :: [a] -> [[a]]
 pset xs = do
   k <- [0..length xs] 
   sample k xs
@@ -226,12 +227,13 @@ We can generate all of the permutations that start with x by consing x onto all
 of the permutations of the rest of the list---the part that doesn't include x.
 
 Here's one way, again using the list monad. To use this you'll need to import
-the Data.List module, which includes the "\\" function; it does "list
+the Data.List module, which includes the "\\\" function; it does "list
 subtraction", if you will.
 
 <code>
 {% highlight haskell %}
-perms [x] = [[x]]
+perms :: (Eq a) => [a] -> [[a]]
+perms [] = [[]]
 perms xs = do
   x <- xs
   perm <- perms (xs \\ [x])
