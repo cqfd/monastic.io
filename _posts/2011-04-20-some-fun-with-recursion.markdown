@@ -386,6 +386,7 @@ Hopefully this has been a fun. In the future, I'd like to use this blog to
 write about similar things: interesting math, stuff about programming
 languages, maybe a little physics.
 
-I've [submitted]() this to Hacker News, so please let me know if anything is
-unclear, mistaken, or hideously inefficient---I'm mostly self-taught and
-haven't really thought much about performance yet. 
+I've [submitted](http://news.ycombinator.com/item?id=2468467) this to Hacker
+News, so please let me know if anything is unclear, mistaken, or hideously
+inefficient---I'm mostly self-taught and haven't really thought much about
+performance yet. 
