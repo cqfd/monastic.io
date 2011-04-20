@@ -181,7 +181,7 @@ of (x:xs) into two disjoint sets: those that contain x, and those that don't.
 We can generate the list of sublists containing x by first generating the
 powerset of xs, and then consing x onto all of those sublists.
 
-And the list of sublists not containing x is simple the powerset of xs.
+And the list of sublists not containing x is simply the powerset of xs.
 
 {% highlight haskell %}
 powerset :: [a] -> [[a]]
