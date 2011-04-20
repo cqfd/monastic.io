@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+   <title>Some fun with recursion, and a little Haskell</title>
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+   <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" 
+     type="text/javascript" charset="utf-8">
+   </script>
+</head>
+<body>
+
+<div class="site">
+  <div class="title">
+    <a href="/">monastic.io</a>
+    <a class="extra" href="/">home</a>
+  </div>
+  
+  <div id="post">
+<h1 id='some_fun_with_recursion_and_a_little_haskell'>Some fun with recursion, and a little Haskell</h1>
+
+<p>The other day I started reading Thomas Judson&#8217;s open source algebra book, <a href='http://abstract.ups.edu/index.html'>Abstract Algebra: Theory and Applications</a>, and came across a familiar identity for n choose k:</p>
+<div class='latex'>
+  \( \binom{n}{k} = \binom{n - 1}{k} + \binom{n - 1}{k - 1} \)
+</div>
+<p>As Judson mentions, you can check that this is true with a little arithmetic: plug in</p>
+<div class='latex'>
+  \( \binom{n}{k} = \frac{n!}{k! (n - k)!} \) 
+</div>
+<p>and then chug.</p>
+
+<p>But is there a nicer way? The identity is, after all, a very simple recursive definition for n choose k; presumably there&#8217;s an elegant, intuitive explanation for why it should be true.</p>
+
+<h2 id='some_philosophizing'>Some philosophizing</h2>
+
+<p>There&#8217;s been some discussion <a href='http://news.ycombinator.com/item?id=2440364'>lately</a> about recursion on Hacker News, and whether or not it&#8217;s an inherently difficult or abstruse concept. I confess that it was initially not obvious to me why this recursion relation for n choose k should be true; I&#8217;ve always used the formula with factorials, which has a nice and intuitive derivation of its own. Now, I <em>love</em> recursion, so I think it&#8217;s interesting that it had never even occurred to me to look for a recursion relation for n choose k. If recursion is so obvious, why hadn&#8217;t I thought to use it?</p>
+
+<p>My claim is that recursion is <em>not</em> particularly obvious, and that human brains, unaided by courses on functional programming, just aren&#8217;t very good at it. The &#8220;wait&#8230; what? That works? &#8230; wait what?&#8221; feeling that most people have when first exposed to recursion is indicative of the fact that recursion is very rarely a natural way for a human being to solve a problem.</p>
+
+<p>For instance, after I figured out why the recursion relation works for n choose k, I excitedly told a friend. He&#8217;s very numerate but not a programmer, and he stared at me a little blankly before asking, &#8221;&#8230; why not just use the factorial version?&#8221;</p>
+
+<p>And yes, as a human being, you would never want to actually compute n choose k using recursion; it would take forever. You may object that factorials are naturally defined recursively, so you&#8217;re still using recursion at the end of the day. However, I would argue that most people tend to think of factorials <em>textually</em>, not recursively; 5! = 5 * 4 * 3 * 2 * 1, all at once. And factorials are one of the simplest examples of recursion!</p>
+
+<p>If you want to get to the point where recursion seems natural, you need to practice it, and be on the lookout for patterns that yield to recursive solutions. Thinking about n choose k recursively added another pattern to my collection, so let&#8217;s do some math :)</p>
+
+<h2 id='a_derivation'>A derivation</h2>
+
+<p>Abstractly, n choose k is defined to be the number of ways of choosing k elements out of a collection of n elements, ignoring order. Alternatively, you could phrase that as the number of distinct k-element subsets of a set with n elements.</p>
+
+<p>For instance, if you have a set of three elements, {1, 2, 3}, and want to pick two of them, there are three ways to do it: {1,2}, {1,3}, and {2,3}. This means that &#8220;three choose two&#8221; is three. By convention we&#8217;ll say that three choose zero is one, because every set technically has the empty set as its lone zero-element subset, and three choose any number larger than three is zero.</p>
+
+<p>The goal is to start with this intuitive notion for what n choose k means, and show that</p>
+<div class='latex'>
+  \( \binom{n}{k} = \binom{n - 1}{k} + \binom{n - 1}{k - 1} \)
+</div>
+<p>Let&#8217;s say S is a set with n elements. The trick is the following: pick some element x in S (your &#8220;favorite&#8221;, doesn&#8217;t matter which one), and observe that every k-element subset of S either contains x, or does not contain x. Kind of trivial, but true. This quality of containing x or not containing x partitions the subsets of S. If we can count the number of k-element subsets that contain x and we can count the number of k-element subsets that don&#8217;t contain x, then we can count the total number of k-element subsets by adding the two together.</p>
+<p>
+Here's the magic: how many k-element subsets are there that don't contain x?
+That's equivalent to picking k elements out of the set S - {x}, which contains
+n - 1 elements; but that's simply \( \binom{n - 1}{k} \), by definition! And
+what about k-element subsets that do contain x? That's equivalent to picking k
+- 1 elements (we've already picked x) from S - {x}; and that's simply \(
+\binom{n-1}{k-1} \)!
+</p>
+<p>And that&#8217;s it! Along with the base cases, this gives us a perfectly executable definition of n choose k. Here&#8217;s what it looks like in Haskell:</p>
+<code>
+
+<div class='highlight'><pre><code class='haskell'><span class='nf'>choose</span> <span class='ow'>::</span> <span class='kt'>Int</span> <span class='ow'>-&gt;</span> <span class='kt'>Int</span> <span class='ow'>-&gt;</span> <span class='kt'>Int</span>
+<span class='nf'>choose</span> <span class='n'>n</span> <span class='mi'>0</span> <span class='ow'>=</span> <span class='mi'>1</span>
+<span class='nf'>choose</span> <span class='mi'>0</span> <span class='n'>k</span> <span class='ow'>=</span> <span class='mi'>0</span>
+<span class='nf'>choose</span> <span class='n'>n</span> <span class='n'>k</span> <span class='ow'>=</span> <span class='n'>choose</span> <span class='p'>(</span><span class='n'>n</span> <span class='o'>-</span> <span class='mi'>1</span><span class='p'>)</span> <span class='n'>k</span> <span class='o'>+</span> <span class='n'>choose</span> <span class='p'>(</span><span class='n'>n</span> <span class='o'>-</span> <span class='mi'>1</span><span class='p'>)</span> <span class='p'>(</span><span class='n'>k</span> <span class='o'>-</span> <span class='mi'>1</span><span class='p'>)</span>
+</code></pre>
+</div>
+
+</code><br />
+<h2 id='the_pattern'>The pattern</h2>
+
+<p>I really like math puzzles that suddenly seem trivial once you realize the trick; oftentimes the trick is applicable to a bunch of other problems.</p>
+
+<p>The trick in this problem was figuring out how to partition the k-element subsets of S into two disjoint classes; having done so, we can then recursively count the two classes, add their counts together, and still have time to write a blog post about how recursion is really cool.</p>
+
+<h2 id='practice_puzzles'>Practice puzzles</h2>
+
+<p>Here are a bunch of other puzzles that, broadly speaking, yield to the same trick: figure out how to split the problem into disjoint subproblems, and then recurse.</p>
+
+<p>Puzzle #1: Write a function that explicitly computes all k-element subsets (sublists) of a list with length n. You can check that you&#8217;ve generated all of them by making sure the number of sublists is n choose k. This is also a nice follow-on to the previous discussion, since the code will look a lot like the code from above.</p>
+
+<p>Puzzle #2: Write a function that computes the powerset of a set (the set of all subsets of the set). As an example, the powerset of {1,2} should be { {}, {1}, {2}, {1,2} }. Note that the empty set, {}, is a subset of any set.</p>
+
+<p>Puzzle #3: Write a function that computes permutations. For example, the permuations of {1,2,3} should be {1,2,3}, {1,3,2}, {2,1,3}, {2,3,1}, {3,1,2}, and {3,2,1}. Starter problem: how would you count permutations?</p>
+
+<p>Puzzle #4: Write a function that counts the number of ways to partion a list.</p>
+
+<p>Puzzle #5: Write a function that explicitly generates partitions. For example, your function should map {1,2} &#8211;&gt; { { {1}, {2} }, { {1,2} } }.</p>
+
+<p>For me at least, the partition puzzles were the hardest.</p>
+
+<h2 id='puzzle_1_computing_all_kelement_sublists'>Puzzle #1: Computing all k-element sublists</h2>
+
+<p>The strategy here is almost identical to what we did for n choose k: given a list of the form (x:xs), any k-element sublist either contains x or it doesn&#8217;t.</p>
+
+<p>We can generate all k-element sublists that do contain x by first generating all sublists of xs with k - 1 elements, and then consing x onto all of them.</p>
+
+<p>And we can generate all k-element sublists that don&#8217;t contain x by generating all k-element sublists of xs.</p>
+
+<p>Here&#8217;s the code. Hopefully the base cases make intuitive sense.</p>
+<div class='highlight'><pre><code class='haskell'><span class='nf'>sample</span> <span class='ow'>::</span> <span class='kt'>Int</span> <span class='ow'>-&gt;</span> <span class='p'>[</span><span class='n'>a</span><span class='p'>]</span> <span class='ow'>-&gt;</span> <span class='p'>[[</span><span class='n'>a</span><span class='p'>]]</span>
+<span class='nf'>sample</span> <span class='mi'>0</span> <span class='kr'>_</span> <span class='ow'>=</span> <span class='p'>[</span><span class='kt'>[]</span><span class='p'>]</span>
+<span class='nf'>sample</span> <span class='kr'>_</span> <span class='kt'>[]</span> <span class='ow'>=</span> <span class='kt'>[]</span>
+<span class='nf'>sample</span> <span class='n'>k</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='n'>xs</span><span class='p'>)</span> <span class='ow'>=</span> 
+  <span class='kr'>let</span> <span class='n'>withFirst</span>    <span class='ow'>=</span> <span class='n'>map</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='p'>)</span> <span class='o'>$</span> <span class='n'>sample</span> <span class='p'>(</span><span class='n'>k</span> <span class='o'>-</span> <span class='mi'>1</span><span class='p'>)</span> <span class='n'>xs</span>
+      <span class='n'>withoutFirst</span> <span class='ow'>=</span> <span class='n'>sample</span> <span class='n'>k</span> <span class='n'>xs</span>
+  <span class='kr'>in</span> <span class='n'>withFirst</span> <span class='o'>++</span> <span class='n'>withoutFirst</span>
+</code></pre>
+</div><br />
+<h2 id='puzzle_2_computing_powersets'>Puzzle #2: Computing powersets</h2>
+
+<p>Consider a list of the form (x:xs). As we keep doing, we can split the sublists of (x:xs) into two disjoint sets: those that contain x, and those that don&#8217;t.</p>
+
+<p>We can generate the list of sublists containing x by first generating the powerset of xs, and then consing x onto all of those sublists.</p>
+
+<p>And the list of sublists not containing x is simple the powerset of xs.</p>
+<div class='highlight'><pre><code class='haskell'><span class='nf'>powerset</span> <span class='ow'>::</span> <span class='p'>[</span><span class='n'>a</span><span class='p'>]</span> <span class='ow'>-&gt;</span> <span class='p'>[[</span><span class='n'>a</span><span class='p'>]]</span>
+<span class='nf'>powerset</span> <span class='kt'>[]</span> <span class='ow'>=</span> <span class='p'>[</span><span class='kt'>[]</span><span class='p'>]</span>
+<span class='nf'>powerset</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='n'>xs</span><span class='p'>)</span> <span class='ow'>=</span> 
+  <span class='kr'>let</span> <span class='n'>ps</span> <span class='ow'>=</span> <span class='n'>powerset</span> <span class='n'>xs</span>
+  <span class='kr'>in</span> <span class='n'>map</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='p'>)</span> <span class='n'>ps</span> <span class='o'>++</span> <span class='n'>ps</span>
+</code></pre>
+</div>
+<p>However, we can also compute powersets with our sample function. Another perfectly valid way to split the sublists into disjoint subsets is by their length. The powerset of a list with n elements with include sublists with length zero (the empty set) all the way up to n (the entire list).</p>
+
+<p>Intuitively, what we&#8217;d like to do then is compute</p>
+<div class='highlight'><pre><code class='haskell'><span class='nf'>sample</span> <span class='n'>k</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='n'>xs</span><span class='p'>)</span>
+</code></pre>
+</div>
+<p>for all k between 0 and n, and then join together all of the results.</p>
+
+<p>Here&#8217;s the code, using Haskell&#8217;s list monad:</p>
+<code>
+
+<div class='highlight'><pre><code class='haskell'><span class='nf'>pset</span> <span class='n'>xs</span> <span class='ow'>=</span> <span class='kr'>do</span>
+  <span class='n'>k</span> <span class='ow'>&lt;-</span> <span class='p'>[</span><span class='mi'>0</span><span class='o'>..</span><span class='n'>length</span> <span class='n'>xs</span><span class='p'>]</span> 
+  <span class='n'>sample</span> <span class='n'>k</span> <span class='n'>xs</span>
+</code></pre>
+</div>
+
+</code>
+<p>If you haven&#8217;t gotten to monads yet, don&#8217;t worry. In words, the code says to sample k xs for all k in the span <span>0..length xs</span>, and then collect all of the results into one big list. So even if the monad syntax makes zero sense, the idea behind the code is actually very simple.</p>
+
+<h2 id='puzzle_3_computing_permutations'>Puzzle #3: Computing permutations</h2>
+
+<p>As usual, we want to find a way to split the possible permutations of a given list (x:xs) into disjoint subsets. One way is to split the permutations based on what element they start with. For example, the permutations of {1,2,3} split nicely into {1,2,3}, {1,3,2}; {2,1,3}, {2,3,1}; and {3,1,2}, {3,2,1}.</p>
+
+<p>We can generate all of the permutations that start with x by consing x onto all of the permutations of the rest of the list&#8211;the part that doesn&#8217;t include x.</p>
+
+<p>Here&#8217;s one way, again using the list monad. To use this you&#8217;ll need to import the Data.List module, which includes the &#8221;\&#8221; function; it does &#8220;list subtraction&#8221;, if you will.</p>
+<code>
+
+<div class='highlight'><pre><code class='haskell'><span class='nf'>perms</span> <span class='p'>[</span><span class='n'>x</span><span class='p'>]</span> <span class='ow'>=</span> <span class='p'>[[</span><span class='n'>x</span><span class='p'>]]</span>
+<span class='nf'>perms</span> <span class='n'>xs</span> <span class='ow'>=</span> <span class='kr'>do</span>
+  <span class='n'>x</span> <span class='ow'>&lt;-</span> <span class='n'>xs</span>
+  <span class='n'>perm</span> <span class='ow'>&lt;-</span> <span class='n'>perms</span> <span class='p'>(</span><span class='n'>xs</span> <span class='o'>\\</span> <span class='p'>[</span><span class='n'>x</span><span class='p'>])</span>
+  <span class='n'>return</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='n'>perm</span><span class='p'>)</span>
+</code></pre>
+</div>
+
+</code>
+<p>In words, the code says to loop over every x in xs, generate every possible permutation of xs - {x}, cons x onto every one of those permutations, and then collect everything into a big list.</p>
+
+<h2 id='puzzles_4_and_5_partitions'>Puzzles #4 and #5: Partitions</h2>
+
+<p>These are really beautiful. Let S be a set with n elements, labelled from 1 to n. A partition of S is a set of non-empty subsets of S that span S; for instance, one partition of {1,2,3} is { {1}, {2,3} }.</p>
+
+<p>How can we split the partitions of S into nice disjoint subsets? Well, every partition must include a subset that contains your favorite element of S, say 1; if it didn&#8217;t, then the partition wouldn&#8217;t span all of S.</p>
+
+<p>The trick is that a given partition can only include one subset containing 1; subsets of the form {1, &#8230;} partition the partitions of S!</p>
+
+<p>An example might help to explain this: lets look at the partitions of {1, 2, 3}. We&#8217;ll use this idea of labelling partitions by which {1, &#8230;} subset they include to enumerate all the partitions.</p>
+
+<p>First, the ones that include {1}:</p>
+
+<ul>
+<li>{ {1}, {2,3} }</li>
+
+<li>{ {1}, { {2}, {3} } }</li>
+</ul>
+
+<p>Next, the ones that include {1,2} or {1,3}:</p>
+
+<ul>
+<li>{ {1,2}, {3} }</li>
+
+<li>{ {1,3}, {2} }</li>
+</ul>
+
+<p>And finally, there&#8217;s the partition that includes {1,2,3}, e.g. the whole set. Evidently there are five partitions of {1,2,3}.</p>
+
+<p>Let&#8217;s call this initial {1,&#8230;} subset the anchor of a partition; any partition of S has a unique anchor. We can generate a (k + 1)-element anchor by first choosing any k elements from S - {1}, and then consing 1 onto the front. We can get all of the possible anchors for a set by doing this for all k between zero and and one less than the length of the list.</p>
+
+<p>Here&#8217;s some Haskell code to that effect:</p>
+<code>
+
+<div class='highlight'><pre><code class='haskell'><span class='nf'>anchors</span> <span class='ow'>::</span> <span class='p'>[</span><span class='n'>a</span><span class='p'>]</span> <span class='ow'>-&gt;</span> <span class='p'>[[</span><span class='n'>a</span><span class='p'>]]</span>
+<span class='nf'>anchors</span> <span class='kt'>[]</span> <span class='ow'>=</span> <span class='p'>[</span><span class='kt'>[]</span><span class='p'>]</span>
+<span class='nf'>anchors</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='n'>xs</span><span class='p'>)</span> <span class='ow'>=</span> <span class='kr'>do</span>
+  <span class='n'>k</span> <span class='ow'>&lt;-</span> <span class='p'>[</span><span class='mi'>0</span><span class='o'>..</span><span class='n'>length</span> <span class='n'>xs</span><span class='p'>]</span>
+  <span class='n'>map</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='p'>)</span> <span class='o'>$</span> <span class='n'>sample</span> <span class='n'>k</span> <span class='n'>xs</span>
+</code></pre>
+</div>
+
+</code>
+<p>Having specified the anchor, the rest of the partition consists of any partition of the rest of the elements in S&#8212;which is where recursion comes in! For every choice of anchor, we need to recursively generate all of the partitions of the remaining elements in S, cons the anchor onto the front of all of them, and then join everything together into a big list.</p>
+
+<p>Once again, it would probably help to illustrate this with an example. Returning to {1,2,3}, the first anchor is {1}. We&#8217;ll generate the partitions including {1} by generating all partitions of the rest of the set, {2,3}. Rather than go through another layer of recursion, let&#8217;s just enumerate them:</p>
+
+<ul>
+<li>{ {2}, {3} }</li>
+
+<li>{ {2,3} }</li>
+</ul>
+
+<p>The next step is to cons {1} onto the front of each partition, which yields</p>
+
+<ul>
+<li>{ {1}, {2}, {3} }</li>
+
+<li>{ {1}, {2,3} }</li>
+</ul>
+
+<p>Doing the same thing for the other anchors yields the rest of the partitions:</p>
+
+<ul>
+<li>{ {1,2}, {3} }</li>
+
+<li>{ {1,3}, {2} }</li>
+
+<li>{ {1,2,3} }</li>
+</ul>
+
+<p>To finish, just collect all of the partitions into a big list.</p>
+
+<p>Here&#8217;s the Haskell. I&#8217;ll explain it line by line, but the cool thing is that &#8220;the code follows the words&#8221; to a pretty remarkable extent.</p>
+<code>
+
+<div class='highlight'><pre><code class='haskell'><span class='nf'>parts</span> <span class='ow'>::</span> <span class='p'>(</span><span class='kt'>Eq</span> <span class='n'>a</span><span class='p'>)</span> <span class='ow'>=&gt;</span> <span class='p'>[</span><span class='n'>a</span><span class='p'>]</span> <span class='ow'>-&gt;</span> <span class='p'>[[[</span><span class='n'>a</span><span class='p'>]]]</span>
+<span class='nf'>parts</span> <span class='kt'>[]</span> <span class='ow'>=</span> <span class='p'>[</span><span class='kt'>[]</span><span class='p'>]</span>
+<span class='nf'>parts</span> <span class='n'>xs</span> <span class='ow'>=</span> <span class='kr'>do</span>
+  <span class='n'>anchor</span> <span class='ow'>&lt;-</span> <span class='n'>anchors</span> <span class='n'>xs</span>
+  <span class='n'>partition</span> <span class='ow'>&lt;-</span> <span class='n'>parts</span> <span class='p'>(</span><span class='n'>xs</span> <span class='o'>\\</span> <span class='n'>anchor</span><span class='p'>)</span>
+  <span class='n'>return</span> <span class='p'>(</span><span class='n'>anchor</span> <span class='kt'>:</span> <span class='n'>partition</span><span class='p'>)</span>
+</code></pre>
+</div>
+
+</code>
+<p>I think this is a really cool example of the list monad in action. The anchor xs line says to generate every possible anchor from the xs. The next line says for every such anchor, recursively generate every possible partition from (xs \\ anchor), i.e. from the xs minus the elements already consumed by the anchor. The final line says to cons the anchor onto the partition, and collect <em>all</em> such anchor : partition combinations into a list.</p>
+
+<p>This post is getting a little long, but I want to talk quickly about counting partitions; I&#8217;ll let you write the Haskell :)</p>
+
+<p>Let C(n) denote the number of partitions of an n-element set. The plan is to count the partitions of an (n + 1)-element set S by adding up the partitions labelled by each anchor.</p>
+
+<p>Every partition of S, per the Haskell code above, is of the form a : p, where a is an anchor, and p is a partition of the elements in S not eaten up by the anchor. All anchors contain a common element, say x, so a (k + 1)-element anchor will contain k elements drawn from the set S - {x}. The remaining partition p must then be a partition of the remaining (n + 1) - (k + 1) = n - k elements.</p>
+
+<p>At the risk of adding one two many variables to the mix, let i = n - k; i is the number of elements contained in p. Just trust me, it makes things look a bit cleaner. A (k + 1)-element anchor will then be an (n - i + 1)-element anchor.</p>
+
+<p>Okay, how many partitions are there of an i-element set? By induction, C(i).</p>
+
+<p>How many (n - i + 1)-element anchors are there? We need to draw (n - i) elements from the set S - {x} (because we&#8217;ve already implicitly drawn x), which contains (n + 1) - 1 = n elements, so there must be n choose (n - i) different (n - i + 1)-element anchors.</p>
+
+<p>For each of these anchors there will be C(i) partitions, so we can sum over all i between zero and n to get</p>
+<div class='latex'>
+  \( C(n + 1) = \sum \binom{n}{n - i} C(i) \)
+</div>
+<p>We can write this in a nicer form by noting that n choose k = n choose (n - k). Intuitively, choosing k elements from an n-element set is equivalent to <em>not</em> choosing (n - k) elements. Thus we wind up with the following lovely formula:</p>
+<div class='latex'>
+  \( C(n + 1) = \sum \binom{n}{i} C(i) \)
+</div>
+<h2 id='wrapup'>Wrapup</h2>
+
+<p>Hopefully this has been a fun. In the future, I&#8217;d like to use this blog to write about similar things: interesting math, stuff about programming languages, maybe a little physics.</p>
+
+<p>I&#8217;ve <a href=''>submitted</a> this to Hacker News, so please let me know if anything is unclear, mistaken, or hideously inefficient&#8211;I&#8217;m mostly self-taught and haven&#8217;t really thought much about performance yet.</p>
+</div>
+
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    
+  </ul>
+</div>
+
+  
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Alan O'Donnell<br />
+        alan.m.odonnell@gmail.com
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="http://github.com/happy4crazy/">github.com/happy4crazy</a><br />
+      </p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

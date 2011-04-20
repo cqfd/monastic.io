@@ -223,7 +223,7 @@ on what element they start with. For example, the permutations of {1,2,3} split
 nicely into {1,2,3}, {1,3,2}; {2,1,3}, {2,3,1}; and {3,1,2}, {3,2,1}.
 
 We can generate all of the permutations that start with x by consing x onto all
-of the permutations of the rest of the list--the part that doesn't include x.
+of the permutations of the rest of the list---the part that doesn't include x.
 
 Here's one way, again using the list monad. To use this you'll need to import
 the Data.List module, which includes the "\\" function; it does "list
@@ -290,7 +290,7 @@ anchors (x:xs) = do
 </code>
 
 Having specified the anchor, the rest of the partition consists of any
-partition of the rest of the elements in S--which is where recursion comes in!
+partition of the rest of the elements in S---which is where recursion comes in!
 For every choice of anchor, we need to recursively generate all of the
 partitions of the remaining elements in S, cons the anchor onto the front of
 all of them, and then join everything together into a big list.
@@ -385,5 +385,5 @@ write about similar things: interesting math, stuff about programming
 languages, maybe a little physics.
 
 I've [submitted]() this to Hacker News, so please let me know if anything is
-unclear, mistaken, or hideously inefficient--I'm mostly self-taught and
+unclear, mistaken, or hideously inefficient---I'm mostly self-taught and
 haven't really thought much about performance yet. 
