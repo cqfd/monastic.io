@@ -264,13 +264,16 @@ include to enumerate all the partitions.
 
 First, the ones that include {1}:
 * { {1}, {2,3} }
-* { {1}, { {2}, {3} } }
+* { {1}, {2}, {3} }
 
 Next, the ones that include {1,2} or {1,3}:
 * { {1,2}, {3} }
 * { {1,3}, {2} }
 
 And finally, there's the partition that includes {1,2,3}, e.g. the whole set.
+
+* { {1,2,3} }
+
 Evidently there are five partitions of {1,2,3}.
 
 Let's call this initial {1,...} subset the anchor of a partition; any partition
