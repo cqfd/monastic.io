@@ -224,7 +224,8 @@ on what element they start with. For example, the permutations of {1,2,3} split
 nicely into {1,2,3}, {1,3,2}; {2,1,3}, {2,3,1}; and {3,1,2}, {3,2,1}.
 
 We can generate all of the permutations that start with x by consing x onto all
-of the permutations of the rest of the list---the part that doesn't include x.
+of the permutations of the _rest_ of the list---the part that doesn't include
+x.
 
 Here's one way, again using the list monad. To use this you'll need to import
 the Data.List module, which includes the "\\\\" function; it does "list
