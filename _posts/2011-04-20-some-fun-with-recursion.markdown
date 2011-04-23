@@ -193,7 +193,7 @@ powerset (x:xs) =
 
 However, we can also compute powersets with our sample function. Another
 perfectly valid way to split the sublists into disjoint subsets is by their
-length. The powerset of a list with n elements with include sublists with
+length. The powerset of a list with n elements will include sublists with
 length zero (the empty set) all the way up to n (the entire list).
 
 Intuitively, what we'd like to do then is compute 
