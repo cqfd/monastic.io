@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+   <title>Special relativity is subtle!</title>
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+   <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" 
+     type="text/javascript" charset="utf-8">
+   </script>
+
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-22878870-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+</head>
+<body>
+
+<div class="site">
+  <div class="title">
+    <a href="/">monastic.io</a>
+    <a class="extra" href="/">home</a>
+  </div>
+  
+  <div id="post">
+<h1 id='special_relativity_is_subtle'>Special relativity is subtle!</h1>
+
+<p>I&#8217;ve recently started doing a little physics tutoring, and the kid I&#8217;m working with is learning special relativity. It&#8217;s been a while since I&#8217;ve thought about SR, so I&#8217;ve been refreshing my memory by reworking a bunch of the standard problems.</p>
+
+<p>In this post I want to give a fun example of just how subtle SR can be: the &#8220;velocity addition formula&#8221;. I decided to rederive it for myself as part of my reintroduction to SR. Two points about my derivation:</p>
+
+<ul>
+<li>
+<p>It assumes you know how length contraction and time dilation work.</p>
+</li>
+
+<li>
+<p>It&#8217;s totally wrong. The mistake is a bit subtle, and it&#8217;s a fun exercise to try to spot it.</p>
+</li>
+</ul>
+
+<h2 id='a_specious_derivation'>A specious derivation</h2>
+<p>
+Suppose that we're sitting in an inertial frame in the depths of outer space.
+To our left, our friend Alice floats along with velocity \(v\), and to our right,
+our friend Bob floats along with velocity \(-v\).
+</p><p>
+Bob intends to measure Alice's velocity in his own inertial frame by timing how
+long it takes her to float past his handy measuring stick, which has length \(L\)
+in his frame.
+</p>
+<p>This means we&#8217;re interested in two events: when Alice gets to the front of Bob&#8217;s measuring stick, and when Alice gets to the end of Bob&#8217;s measuring stick.</p>
+<p>
+Let's start by looking at these events in our own inertial frame. Due to length
+contraction, Bob's measuring stick has contracted length \(L/\gamma\), where
+\(\gamma\) is special relativity's ubiquitous scaling factor,
+</p><div class='latex'>
+  \( \gamma = \frac{1}{\sqrt{1 - v^2/c^2}} \)
+</div><p>
+Let's calculate the time that elapses in our frame between these two events. If
+Alice reaches the start of the measuring stick at \(x = 0\), then she'll reach
+the end of the stick at \(x = L/(2\gamma)\). She's floating with velocity
+\(v\), so this will take time
+</p><div class='latex'>
+  \( \Delta t = \frac{L}{2 v \gamma} \)
+</div><p>
+Now let's look at things from Bob's perspective. Given that he's moving with
+speed \(v\), his clocks will tick slower than ours by a factor of \(1/\gamma\);
+that is, he will measure the elapsed time between the two events as
+</p><div class='latex'>
+  \( \Delta t' = \frac{\Delta t}{\gamma} = \frac{L}{2 v \gamma^2} \)
+</div><p>
+Furthermore, in Bob's frame the rod still has length \(L\), so if it takes
+Alice time \(\Delta t'\) to traverse a distance \(L\), then her velocity in
+Bob's frame must be
+</p><div class='latex'>
+  \( v' = \frac{L}{\Delta t'} = 2 v \gamma^2 = \frac{2 v}{1 - v^2/c^2} \)
+</div><p>
+Unfortunately, this is wrong. The correct result is
+</p><div class='latex'>
+  \( v' = \frac{2 v}{1 + v^2/c^2}  \)
+</div>
+<p>So, where&#8217;s the mistake?</p>
+</div>
+
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    
+      <li><span>20 Apr 2011</span> &raquo; <a href="/2011/04/20/some-fun-with-recursion.html">Some fun with recursion, and a little Haskell</a></li>
+    
+  </ul>
+</div>
+
+  
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Alan O'Donnell<br />
+        alan.m.odonnell@gmail.com
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="http://github.com/happy4crazy/">github.com/happy4crazy</a><br />
+      </p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

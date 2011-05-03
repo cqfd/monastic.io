@@ -10,6 +10,20 @@
    <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" 
      type="text/javascript" charset="utf-8">
    </script>
+
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-22878870-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
 </head>
 <body>
 
@@ -122,7 +136,7 @@ what about k-element subsets that do contain x? That's equivalent to picking k
 
 <p>We can generate the list of sublists containing x by first generating the powerset of xs, and then consing x onto all of those sublists.</p>
 
-<p>And the list of sublists not containing x is simple the powerset of xs.</p>
+<p>And the list of sublists not containing x is simply the powerset of xs.</p>
 <div class='highlight'><pre><code class='haskell'><span class='nf'>powerset</span> <span class='ow'>::</span> <span class='p'>[</span><span class='n'>a</span><span class='p'>]</span> <span class='ow'>-&gt;</span> <span class='p'>[[</span><span class='n'>a</span><span class='p'>]]</span>
 <span class='nf'>powerset</span> <span class='kt'>[]</span> <span class='ow'>=</span> <span class='p'>[</span><span class='kt'>[]</span><span class='p'>]</span>
 <span class='nf'>powerset</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='n'>xs</span><span class='p'>)</span> <span class='ow'>=</span> 
@@ -130,7 +144,7 @@ what about k-element subsets that do contain x? That's equivalent to picking k
   <span class='kr'>in</span> <span class='n'>map</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='p'>)</span> <span class='n'>ps</span> <span class='o'>++</span> <span class='n'>ps</span>
 </code></pre>
 </div>
-<p>However, we can also compute powersets with our sample function. Another perfectly valid way to split the sublists into disjoint subsets is by their length. The powerset of a list with n elements with include sublists with length zero (the empty set) all the way up to n (the entire list).</p>
+<p>However, we can also compute powersets with our sample function. Another perfectly valid way to split the sublists into disjoint subsets is by their length. The powerset of a list with n elements will include sublists with length zero (the empty set) all the way up to n (the entire list).</p>
 
 <p>Intuitively, what we&#8217;d like to do then is compute</p>
 <div class='highlight'><pre><code class='haskell'><span class='nf'>sample</span> <span class='n'>k</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='n'>xs</span><span class='p'>)</span>
@@ -155,7 +169,7 @@ what about k-element subsets that do contain x? That's equivalent to picking k
 
 <p>As usual, we want to find a way to split the possible permutations of a given list (x:xs) into disjoint subsets. One way is to split the permutations based on what element they start with. For example, the permutations of {1,2,3} split nicely into {1,2,3}, {1,3,2}; {2,1,3}, {2,3,1}; and {3,1,2}, {3,2,1}.</p>
 
-<p>We can generate all of the permutations that start with x by consing x onto all of the permutations of the rest of the list&#8212;the part that doesn&#8217;t include x.</p>
+<p>We can generate all of the permutations that start with x by consing x onto all of the permutations of the <em>rest</em> of the list&#8212;the part that doesn&#8217;t include x.</p>
 
 <p>Here&#8217;s one way, again using the list monad. To use this you&#8217;ll need to import the Data.List module, which includes the &#8220;\\&#8221; function; it does &#8220;list subtraction&#8221;, if you will.</p>
 <code>
@@ -187,7 +201,7 @@ what about k-element subsets that do contain x? That's equivalent to picking k
 <ul>
 <li>{ {1}, {2,3} }</li>
 
-<li>{ {1}, { {2}, {3} } }</li>
+<li>{ {1}, {2}, {3} }</li>
 </ul>
 
 <p>Next, the ones that include {1,2} or {1,3}:</p>
@@ -198,7 +212,13 @@ what about k-element subsets that do contain x? That's equivalent to picking k
 <li>{ {1,3}, {2} }</li>
 </ul>
 
-<p>And finally, there&#8217;s the partition that includes {1,2,3}, e.g. the whole set. Evidently there are five partitions of {1,2,3}.</p>
+<p>And finally, there&#8217;s the partition that includes {1,2,3}, e.g. the whole set.</p>
+
+<ul>
+<li>{ {1,2,3} }</li>
+</ul>
+
+<p>Evidently there are five partitions of {1,2,3}.</p>
 
 <p>Let&#8217;s call this initial {1,&#8230;} subset the anchor of a partition; any partition of S has a unique anchor. We can generate a (k + 1)-element anchor by first choosing any k elements from S - {1}, and then consing 1 onto the front. We can get all of the possible anchors for a set by doing this for all k between zero and and one less than the length of the list.</p>
 
@@ -283,12 +303,14 @@ what about k-element subsets that do contain x? That's equivalent to picking k
 
 <p>Hopefully this has been a fun. In the future, I&#8217;d like to use this blog to write about similar things: interesting math, stuff about programming languages, maybe a little physics.</p>
 
-<p>I&#8217;ve <a href=''>submitted</a> this to Hacker News, so please let me know if anything is unclear, mistaken, or hideously inefficient&#8212;I&#8217;m mostly self-taught and haven&#8217;t really thought much about performance yet.</p>
+<p>I&#8217;ve <a href='http://news.ycombinator.com/item?id=2468467'>submitted</a> this to Hacker News, so please let me know if anything is unclear, mistaken, or hideously inefficient&#8212;I&#8217;m mostly self-taught and haven&#8217;t really thought much about performance yet.</p>
 </div>
 
 <div id="related">
   <h2>Related Posts</h2>
   <ul class="posts">
+    
+      <li><span>03 May 2011</span> &raquo; <a href="/2011/05/03/special-relativity-is-subtle.html">Special relativity is subtle!</a></li>
     
   </ul>
 </div>
