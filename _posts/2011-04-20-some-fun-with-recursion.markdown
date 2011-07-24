@@ -281,7 +281,7 @@ Let's call this initial {1,...} subset the anchor of a partition; any partition
 of S has a unique anchor. We can generate a (k + 1)-element anchor by first
 choosing any k elements from S - {1}, and then consing 1 onto the front. We can
 get all of the possible anchors for a set by doing this for all k between zero
-and and one less than the length of the list.
+and one less than the length of the list.
 
 Here's some Haskell code to that effect:
 
