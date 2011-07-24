@@ -101,15 +101,12 @@ what about k-element subsets that do contain x? That's equivalent to picking k
 And that's it! Along with the base cases, this gives us a perfectly executable
 definition of n choose k. Here's what it looks like in Haskell:
 
-<code>
 {% highlight haskell %}
 choose :: Int -> Int -> Int
 choose n 0 = 1
 choose 0 k = 0
 choose n k = choose (n - 1) k + choose (n - 1) (k - 1)
 {% endhighlight %}
-</code>
-
 <br/>
 
 ## The pattern
@@ -202,14 +199,12 @@ between 0 and n, and then join together all of the results.
 
 Here's the code, using Haskell's list monad:
 
-<code>
 {% highlight haskell %}
 pset :: [a] -> [[a]]
 pset xs = do
   k <- [0..length xs] 
   sample k xs
 {% endhighlight %}
-</code>
 
 If you haven't gotten to monads yet, don't worry. In words, the code says to
 sample k xs for all k in the span [0..length xs], and then collect all of
@@ -231,7 +226,6 @@ Here's one way, again using the list monad. To use this you'll need to import
 the Data.List module, which includes the "\\\\" function; it does "list
 subtraction", if you will.
 
-<code>
 {% highlight haskell %}
 perms :: (Eq a) => [a] -> [[a]]
 perms [] = [[]]
@@ -240,7 +234,6 @@ perms xs = do
   perm <- perms (xs \\ [x])
   return (x:perm)
 {% endhighlight %}
-</code>
 
 In words, the code says to loop over every x in xs, generate every possible
 permutation of xs - {x}, cons x onto every one of those permutations, and then
@@ -285,7 +278,6 @@ and one less than the length of the list.
 
 Here's some Haskell code to that effect:
 
-<code>
 {% highlight haskell %}
 anchors :: [a] -> [[a]]
 anchors [] = [[]]
@@ -293,7 +285,6 @@ anchors (x:xs) = do
   k <- [0..length xs]
   map (x:) $ sample k xs
 {% endhighlight %}
-</code>
 
 Having specified the anchor, the rest of the partition consists of any
 partition of the rest of the elements in S---which is where recursion comes in!
@@ -325,7 +316,6 @@ To finish, just collect all of the partitions into a big list.
 Here's the Haskell. I'll explain it line by line, but the cool thing is that 
 "the code follows the words" to a pretty remarkable extent.
 
-<code>
 {% highlight haskell %}
 parts :: (Eq a) => [a] -> [[[a]]]
 parts [] = [[]]
@@ -334,7 +324,6 @@ parts xs = do
   partition <- parts (xs \\ anchor)
   return (anchor : partition)
 {% endhighlight %}
-</code>
 
 I think this is a really cool example of the list monad in action. The anchor
 xs line says to generate every possible anchor from the xs. The next line says

@@ -45,15 +45,15 @@
 <span class='n'>a</span><span class='o'>.</span><span class='n'>reduce</span><span class='p'>(</span><span class='mi'>0</span><span class='p'>)</span> <span class='p'>{</span> <span class='o'>|</span><span class='n'>sum</span><span class='p'>,</span> <span class='n'>i</span><span class='o'>|</span> <span class='n'>sum</span> <span class='o'>+</span> <span class='n'>i</span> <span class='p'>}</span> <span class='c1'># =&gt; 15 </span>
 </code></pre>
 </div>
-<p>Reduce takes one argument and a block. The block is invoked once for every element in the collection, and the current element is passed as the block&#8217;s second argument, <code>i</code>. The block&#8217;s first argument, <code>sum</code>, is set on its first invokation to be the argument passed to reduce; on subsequent invokations, it&#8217;s set to the result of the previous invokation. The return value of the call to reduce is the value of the final invokation of the block.</p>
+<p>Reduce takes one argument and a block. The block is invoked once for every element in the collection, and the current element is passed as the block&#8217;s second argument, <code>i</code>. The block&#8217;s first argument, <code>sum</code>, is set on its first invocation to be the argument passed to reduce; on subsequent invocations, it&#8217;s set to the result of the previous invocation. The return value of the call to reduce is the value of the final invocation of the block.</p>
 
 <p>That&#8217;s a bit of a mouthful, so let&#8217;s go through the example step by step. Afterwards, we&#8217;ll implement our own version of reduce in Ruby.</p>
 
-<p>We start by invoking the block on the first element of <code>a</code>, so that <code>i</code> is set to be <code>1</code>. This is the first invokation, so <code>sum</code> is set to <code>0</code>, the argument we passed to reduce. The block evaluates to <code>sum + i</code>, or <code>1</code>.</p>
+<p>We start by invoking the block on the first element of <code>a</code>, so that <code>i</code> is set to be <code>1</code>. This is the first invocation, so <code>sum</code> is set to <code>0</code>, the argument we passed to reduce. The block evaluates to <code>sum + i</code>, or <code>1</code>.</p>
 
-<p>Next, invoke the block on the second element of a, by setting <code>i</code> to be <code>2</code>. This is our second time invoking the block, so set <code>sum</code> to tbe result of the last invokation, <code>1</code>. The block then evaluates to <code>sum + i</code>, or <code>3</code>.</p>
+<p>Next, invoke the block on the second element of <code>a</code>, by setting <code>i</code> to be <code>2</code>. This is our second time invoking the block, so set <code>sum</code> to tbe result of the last invocation, <code>1</code>. The block then evaluates to <code>sum + i</code>, or <code>3</code>.</p>
 
-<p>Continuing in the same fashion, you see that at each invokation, <code>sum</code> is set to be the sum of all the previous elements of the array. Adding the last element of the array then sums the entire array.</p>
+<p>Continuing in the same fashion, you see that at each invocation, <code>sum</code> is set to be the sum of all the previous elements of the array. Adding the last element of the array then sums the entire array.</p>
 
 <h2 id='implementing_reduce_in_ruby'>Implementing reduce in Ruby</h2>
 
@@ -68,7 +68,7 @@
 <span class='k'>end</span> 
 </code></pre>
 </div>
-<p>The code loops over every element in the array you want to reduce, updating the value of the passed argument each time. At the very end, it returns the fully accumulated <code>acc</code> value. Also, notice that it uses a bit of syntactic sugar: generally speaking (emphasis on generally), Ruby will let you get away without appending an explicit receiver to a method call if that receiver is the current object, <code>self</code>. So the bare <code>each</code> is equivalent to <code>self.each</code>.</p>
+<p>The code loops over every element in the array you want to reduce, updating the value of the passed argument each time. At the very end, it returns the fully accumulated <code>acc</code> value. Also, notice that it uses a bit of syntactic sugar: generally speaking (emphasis on generally), Ruby will let you get away without prepending an explicit receiver to a method call if that receiver is the current object, <code>self</code>. So the bare <code>each</code> is equivalent to <code>self.each</code>.</p>
 
 <h2 id='some_background_on_folds_in_haskell'>Some background on folds in Haskell</h2>
 
@@ -78,8 +78,6 @@
 </code></pre>
 </div>
 <p>In case you&#8217;re not familiar with Haskell&#8217;s syntactic sugar, <code>( + )</code> and <code>( * )</code> are called sections. Given any infix binary operator <code>o</code>, <code>( o )</code> is the prefix version; you can also do fun things like <code>(x o)</code>, which partially applies <code>x</code> into the operator&#8217;s first slot, or <code>(o x)</code> to partially apply <code>x</code> into the second slot.</p>
-
-<p>In case you&#8217;re not familiar with Haskell&#8217;s syntactic sugar, <code>( + )</code> and <code>( * )</code> are called sections;</p>
 
 <p>The left fold, <code>foldl</code>, is so-named because it operates from the left. Its example expands like this:</p>
 <div class='highlight'><pre><code class='haskell'><span class='p'>((((</span><span class='mi'>0</span> <span class='o'>+</span> <span class='mi'>1</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>2</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>3</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>4</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>5</span>
@@ -91,7 +89,7 @@
 </div><br />
 <h2 id='implementing_folds_in_haskell'>Implementing folds in Haskell</h2>
 
-<p>Let&#8217;s start with the left fold. Unlike in Ruby, Haskell won&#8217;t let us update an accumulator value, as variables are immutable in Haskell. This means we&#8217;ll need to use recursion.</p>
+<p>Let&#8217;s start with the left fold. Unlike in Ruby, Haskell won&#8217;t let us update an accumulator value, as variables are immutable. This means we&#8217;ll need to use recursion.</p>
 
 <p>You can get a little intuition for how to structure the recursion by observing the following silly identity for the left fold example:</p>
 <div class='highlight'><pre><code class='haskell'><span class='p'>((((</span><span class='mi'>0</span> <span class='o'>+</span> <span class='mi'>1</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>2</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>3</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>4</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>5</span> <span class='ow'>=</span> <span class='p'>(((</span><span class='mi'>1</span> <span class='o'>+</span> <span class='mi'>2</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>3</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>4</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>5</span>

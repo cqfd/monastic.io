@@ -80,16 +80,12 @@ what about k-element subsets that do contain x? That's equivalent to picking k
 \binom{n-1}{k-1} \)!
 </p>
 <p>And that&#8217;s it! Along with the base cases, this gives us a perfectly executable definition of n choose k. Here&#8217;s what it looks like in Haskell:</p>
-<code>
-
 <div class='highlight'><pre><code class='haskell'><span class='nf'>choose</span> <span class='ow'>::</span> <span class='kt'>Int</span> <span class='ow'>-&gt;</span> <span class='kt'>Int</span> <span class='ow'>-&gt;</span> <span class='kt'>Int</span>
 <span class='nf'>choose</span> <span class='n'>n</span> <span class='mi'>0</span> <span class='ow'>=</span> <span class='mi'>1</span>
 <span class='nf'>choose</span> <span class='mi'>0</span> <span class='n'>k</span> <span class='ow'>=</span> <span class='mi'>0</span>
 <span class='nf'>choose</span> <span class='n'>n</span> <span class='n'>k</span> <span class='ow'>=</span> <span class='n'>choose</span> <span class='p'>(</span><span class='n'>n</span> <span class='o'>-</span> <span class='mi'>1</span><span class='p'>)</span> <span class='n'>k</span> <span class='o'>+</span> <span class='n'>choose</span> <span class='p'>(</span><span class='n'>n</span> <span class='o'>-</span> <span class='mi'>1</span><span class='p'>)</span> <span class='p'>(</span><span class='n'>k</span> <span class='o'>-</span> <span class='mi'>1</span><span class='p'>)</span>
 </code></pre>
-</div>
-
-</code><br />
+</div><br />
 <h2 id='the_pattern'>The pattern</h2>
 
 <p>I really like math puzzles that suddenly seem trivial once you realize the trick; oftentimes the trick is applicable to a bunch of other problems.</p>
@@ -153,16 +149,12 @@ what about k-element subsets that do contain x? That's equivalent to picking k
 <p>for all k between 0 and n, and then join together all of the results.</p>
 
 <p>Here&#8217;s the code, using Haskell&#8217;s list monad:</p>
-<code>
-
 <div class='highlight'><pre><code class='haskell'><span class='nf'>pset</span> <span class='ow'>::</span> <span class='p'>[</span><span class='n'>a</span><span class='p'>]</span> <span class='ow'>-&gt;</span> <span class='p'>[[</span><span class='n'>a</span><span class='p'>]]</span>
 <span class='nf'>pset</span> <span class='n'>xs</span> <span class='ow'>=</span> <span class='kr'>do</span>
   <span class='n'>k</span> <span class='ow'>&lt;-</span> <span class='p'>[</span><span class='mi'>0</span><span class='o'>..</span><span class='n'>length</span> <span class='n'>xs</span><span class='p'>]</span> 
   <span class='n'>sample</span> <span class='n'>k</span> <span class='n'>xs</span>
 </code></pre>
 </div>
-
-</code>
 <p>If you haven&#8217;t gotten to monads yet, don&#8217;t worry. In words, the code says to sample k xs for all k in the span <span>0..length xs</span>, and then collect all of the results into one big list. So even if the monad syntax makes zero sense, the idea behind the code is actually very simple.</p>
 
 <h2 id='puzzle_3_computing_permutations'>Puzzle #3: Computing permutations</h2>
@@ -172,8 +164,6 @@ what about k-element subsets that do contain x? That's equivalent to picking k
 <p>We can generate all of the permutations that start with x by consing x onto all of the permutations of the <em>rest</em> of the list&#8212;the part that doesn&#8217;t include x.</p>
 
 <p>Here&#8217;s one way, again using the list monad. To use this you&#8217;ll need to import the Data.List module, which includes the &#8220;\\&#8221; function; it does &#8220;list subtraction&#8221;, if you will.</p>
-<code>
-
 <div class='highlight'><pre><code class='haskell'><span class='nf'>perms</span> <span class='ow'>::</span> <span class='p'>(</span><span class='kt'>Eq</span> <span class='n'>a</span><span class='p'>)</span> <span class='ow'>=&gt;</span> <span class='p'>[</span><span class='n'>a</span><span class='p'>]</span> <span class='ow'>-&gt;</span> <span class='p'>[[</span><span class='n'>a</span><span class='p'>]]</span>
 <span class='nf'>perms</span> <span class='kt'>[]</span> <span class='ow'>=</span> <span class='p'>[</span><span class='kt'>[]</span><span class='p'>]</span>
 <span class='nf'>perms</span> <span class='n'>xs</span> <span class='ow'>=</span> <span class='kr'>do</span>
@@ -182,8 +172,6 @@ what about k-element subsets that do contain x? That's equivalent to picking k
   <span class='n'>return</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='n'>perm</span><span class='p'>)</span>
 </code></pre>
 </div>
-
-</code>
 <p>In words, the code says to loop over every x in xs, generate every possible permutation of xs - {x}, cons x onto every one of those permutations, and then collect everything into a big list.</p>
 
 <h2 id='puzzles_4_and_5_partitions'>Puzzles #4 and #5: Partitions</h2>
@@ -220,11 +208,9 @@ what about k-element subsets that do contain x? That's equivalent to picking k
 
 <p>Evidently there are five partitions of {1,2,3}.</p>
 
-<p>Let&#8217;s call this initial {1,&#8230;} subset the anchor of a partition; any partition of S has a unique anchor. We can generate a (k + 1)-element anchor by first choosing any k elements from S - {1}, and then consing 1 onto the front. We can get all of the possible anchors for a set by doing this for all k between zero and and one less than the length of the list.</p>
+<p>Let&#8217;s call this initial {1,&#8230;} subset the anchor of a partition; any partition of S has a unique anchor. We can generate a (k + 1)-element anchor by first choosing any k elements from S - {1}, and then consing 1 onto the front. We can get all of the possible anchors for a set by doing this for all k between zero and one less than the length of the list.</p>
 
 <p>Here&#8217;s some Haskell code to that effect:</p>
-<code>
-
 <div class='highlight'><pre><code class='haskell'><span class='nf'>anchors</span> <span class='ow'>::</span> <span class='p'>[</span><span class='n'>a</span><span class='p'>]</span> <span class='ow'>-&gt;</span> <span class='p'>[[</span><span class='n'>a</span><span class='p'>]]</span>
 <span class='nf'>anchors</span> <span class='kt'>[]</span> <span class='ow'>=</span> <span class='p'>[</span><span class='kt'>[]</span><span class='p'>]</span>
 <span class='nf'>anchors</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='n'>xs</span><span class='p'>)</span> <span class='ow'>=</span> <span class='kr'>do</span>
@@ -232,8 +218,6 @@ what about k-element subsets that do contain x? That's equivalent to picking k
   <span class='n'>map</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='p'>)</span> <span class='o'>$</span> <span class='n'>sample</span> <span class='n'>k</span> <span class='n'>xs</span>
 </code></pre>
 </div>
-
-</code>
 <p>Having specified the anchor, the rest of the partition consists of any partition of the rest of the elements in S&#8212;which is where recursion comes in! For every choice of anchor, we need to recursively generate all of the partitions of the remaining elements in S, cons the anchor onto the front of all of them, and then join everything together into a big list.</p>
 
 <p>Once again, it would probably help to illustrate this with an example. Returning to {1,2,3}, the first anchor is {1}. We&#8217;ll generate the partitions including {1} by generating all partitions of the rest of the set, {2,3}. Rather than go through another layer of recursion, let&#8217;s just enumerate them:</p>
@@ -265,8 +249,6 @@ what about k-element subsets that do contain x? That's equivalent to picking k
 <p>To finish, just collect all of the partitions into a big list.</p>
 
 <p>Here&#8217;s the Haskell. I&#8217;ll explain it line by line, but the cool thing is that &#8220;the code follows the words&#8221; to a pretty remarkable extent.</p>
-<code>
-
 <div class='highlight'><pre><code class='haskell'><span class='nf'>parts</span> <span class='ow'>::</span> <span class='p'>(</span><span class='kt'>Eq</span> <span class='n'>a</span><span class='p'>)</span> <span class='ow'>=&gt;</span> <span class='p'>[</span><span class='n'>a</span><span class='p'>]</span> <span class='ow'>-&gt;</span> <span class='p'>[[[</span><span class='n'>a</span><span class='p'>]]]</span>
 <span class='nf'>parts</span> <span class='kt'>[]</span> <span class='ow'>=</span> <span class='p'>[</span><span class='kt'>[]</span><span class='p'>]</span>
 <span class='nf'>parts</span> <span class='n'>xs</span> <span class='ow'>=</span> <span class='kr'>do</span>
@@ -275,8 +257,6 @@ what about k-element subsets that do contain x? That's equivalent to picking k
   <span class='n'>return</span> <span class='p'>(</span><span class='n'>anchor</span> <span class='kt'>:</span> <span class='n'>partition</span><span class='p'>)</span>
 </code></pre>
 </div>
-
-</code>
 <p>I think this is a really cool example of the list monad in action. The anchor xs line says to generate every possible anchor from the xs. The next line says for every such anchor, recursively generate every possible partition from (xs \\ anchor), i.e. from the xs minus the elements already consumed by the anchor. The final line says to cons the anchor onto the partition, and collect <em>all</em> such anchor : partition combinations into a list.</p>
 
 <p>This post is getting a little long, but I want to talk quickly about counting partitions; I&#8217;ll let you write the Haskell :)</p>
