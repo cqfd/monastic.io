@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+   <title>Folds in Ruby</title>
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+   <script src="https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" 
+     type="text/javascript" charset="utf-8">
+   </script>
+
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-22878870-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+</head>
+<body>
+
+<div class="site">
+  <div class="title">
+    <a href="/">monastic.io</a>
+    <a class="extra" href="/">home</a>
+  </div>
+  
+  <div id="post">
+<h1 id='reductions_and_folds_in_ruby'>Reductions and folds in Ruby</h1>
+
+<h2 id='some_background_on_reduce'>Some background on reduce</h2>
+
+<p>In this post I want to talk about Ruby&#8217;s reduce method and its relation to folds in functional programming. The plan is to first talk about how reduce works in Ruby, then talk about how folds work in Haskell, and finally I&#8217;ll show you how to implement folds in Ruby.</p>
+
+<p>Let&#8217;s first recall what reduce does. Reduce comes from the Enumerable module, and it allows you to loop over a collection and &#8220;reduce&#8221; it to a single value. A simple example would be summing the values in an array:</p>
+<div class='highlight'><pre><code class='ruby'><span class='n'>a</span> <span class='o'>=</span> <span class='o'>[</span><span class='mi'>1</span><span class='p'>,</span> <span class='mi'>2</span><span class='p'>,</span> <span class='mi'>3</span><span class='p'>,</span> <span class='mi'>4</span><span class='p'>,</span> <span class='mi'>5</span><span class='o'>]</span> 
+<span class='n'>a</span><span class='o'>.</span><span class='n'>reduce</span><span class='p'>(</span><span class='mi'>0</span><span class='p'>)</span> <span class='p'>{</span> <span class='o'>|</span><span class='n'>sum</span><span class='p'>,</span> <span class='n'>i</span><span class='o'>|</span> <span class='n'>sum</span> <span class='o'>+</span> <span class='n'>i</span> <span class='p'>}</span> <span class='c1'># =&gt; 15 </span>
+</code></pre>
+</div>
+<p>Reduce takes one argument and a block. The block is invoked once for every element in the collection, and the current element is passed as the block&#8217;s second argument, <code>i</code>. The block&#8217;s first argument, <code>sum</code>, is set on its first invokation to be the argument passed to reduce; on subsequent invokations, it&#8217;s set to the result of the previous invokation. The return value of the call to reduce is the value of the final invokation of the block.</p>
+
+<p>That&#8217;s a bit of a mouthful, so let&#8217;s go through the example step by step. Afterwards, we&#8217;ll implement our own version of reduce in Ruby.</p>
+
+<p>We start by invoking the block on the first element of <code>a</code>, so that <code>i</code> is set to be <code>1</code>. This is the first invokation, so <code>sum</code> is set to <code>0</code>, the argument we passed to reduce. The block evaluates to <code>sum + i</code>, or <code>1</code>.</p>
+
+<p>Next, invoke the block on the second element of a, by setting <code>i</code> to be <code>2</code>. This is our second time invoking the block, so set <code>sum</code> to tbe result of the last invokation, <code>1</code>. The block then evaluates to <code>sum + i</code>, or <code>3</code>.</p>
+
+<p>Continuing in the same fashion, you see that at each invokation, <code>sum</code> is set to be the sum of all the previous elements of the array. Adding the last element of the array then sums the entire array.</p>
+
+<h2 id='implementing_reduce_in_ruby'>Implementing reduce in Ruby</h2>
+
+<p>Here&#8217;s a simple implementation of this algorithm in Ruby, written as a monkeypatch on the <code>Array</code> class:</p>
+<div class='highlight'><pre><code class='ruby'><span class='k'>class</span> <span class='nc'>Array</span> 
+  <span class='k'>def</span> <span class='nf'>reduce</span> <span class='n'>acc</span> 
+    <span class='n'>each</span> <span class='k'>do</span> <span class='o'>|</span><span class='n'>i</span><span class='o'>|</span> 
+      <span class='n'>acc</span> <span class='o'>=</span> <span class='k'>yield</span> <span class='n'>acc</span><span class='p'>,</span> <span class='n'>i</span>
+    <span class='k'>end</span> 
+    <span class='n'>acc</span> 
+  <span class='k'>end</span> 
+<span class='k'>end</span> 
+</code></pre>
+</div>
+<p>The code loops over every element in the array you want to reduce, updating the value of the passed argument each time. At the very end, it returns the fully accumulated <code>acc</code> value. Also, notice that it uses a bit of syntactic sugar: generally speaking (emphasis on generally), Ruby will let you get away without appending an explicit receiver to a method call if that receiver is the current object, <code>self</code>. So the bare <code>each</code> is equivalent to <code>self.each</code>.</p>
+
+<h2 id='some_background_on_folds_in_haskell'>Some background on folds in Haskell</h2>
+
+<p>Ruby&#8217;s reduce has a direct analogue in most functional programming languages: folds. Like reduce, folds give you a way to accumulate a list of values into a single value. For instance, Haskell comes with two functions, <code>foldl</code> and <code>foldr</code>, that work pretty much exactly like reduce:</p>
+<div class='highlight'><pre><code class='haskell'><span class='nf'>foldl</span> <span class='p'>(</span> <span class='o'>+</span> <span class='p'>)</span> <span class='mi'>0</span> <span class='p'>[</span><span class='mi'>1</span><span class='p'>,</span><span class='mi'>2</span><span class='p'>,</span><span class='mi'>3</span><span class='p'>,</span><span class='mi'>4</span><span class='p'>,</span><span class='mi'>5</span><span class='p'>]</span> <span class='c1'>-- 15</span>
+<span class='nf'>foldr</span> <span class='p'>(</span> <span class='o'>*</span> <span class='p'>)</span> <span class='mi'>1</span> <span class='p'>[</span><span class='mi'>1</span><span class='p'>,</span><span class='mi'>2</span><span class='p'>,</span><span class='mi'>3</span><span class='p'>,</span><span class='mi'>4</span><span class='p'>,</span><span class='mi'>5</span><span class='p'>]</span> <span class='c1'>-- 120</span>
+</code></pre>
+</div>
+<p>In case you&#8217;re not familiar with Haskell&#8217;s syntactic sugar, <code>( + )</code> and <code>( * )</code> are called sections. Given any infix binary operator <code>o</code>, <code>( o )</code> is the prefix version; you can also do fun things like <code>(x o)</code>, which partially applies <code>x</code> into the operator&#8217;s first slot, or <code>(o x)</code> to partially apply <code>x</code> into the second slot.</p>
+
+<p>In case you&#8217;re not familiar with Haskell&#8217;s syntactic sugar, <code>( + )</code> and <code>( * )</code> are called sections;</p>
+
+<p>The left fold, <code>foldl</code>, is so-named because it operates from the left. Its example expands like this:</p>
+<div class='highlight'><pre><code class='haskell'><span class='p'>((((</span><span class='mi'>0</span> <span class='o'>+</span> <span class='mi'>1</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>2</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>3</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>4</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>5</span>
+</code></pre>
+</div>
+<p>The right fold, <code>foldr</code>, operates from the right. Its example expands like this:</p>
+<div class='highlight'><pre><code class='haskell'><span class='mi'>1</span> <span class='o'>*</span> <span class='p'>(</span><span class='mi'>2</span> <span class='o'>*</span> <span class='p'>(</span><span class='mi'>3</span> <span class='o'>*</span> <span class='p'>(</span><span class='mi'>4</span> <span class='o'>*</span> <span class='p'>(</span><span class='mi'>5</span> <span class='o'>*</span> <span class='mi'>1</span><span class='p'>))))</span>
+</code></pre>
+</div><br />
+<h2 id='implementing_folds_in_haskell'>Implementing folds in Haskell</h2>
+
+<p>Let&#8217;s start with the left fold. Unlike in Ruby, Haskell won&#8217;t let us update an accumulator value, as variables are immutable in Haskell. This means we&#8217;ll need to use recursion.</p>
+
+<p>You can get a little intuition for how to structure the recursion by observing the following silly identity for the left fold example:</p>
+<div class='highlight'><pre><code class='haskell'><span class='p'>((((</span><span class='mi'>0</span> <span class='o'>+</span> <span class='mi'>1</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>2</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>3</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>4</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>5</span> <span class='ow'>=</span> <span class='p'>(((</span><span class='mi'>1</span> <span class='o'>+</span> <span class='mi'>2</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>3</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>4</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>5</span>
+</code></pre>
+</div>
+<p>The left hand side of the equation is, by definition, equal to</p>
+<div class='highlight'><pre><code class='haskell'><span class='nf'>foldl</span> <span class='p'>(</span> <span class='o'>+</span> <span class='p'>)</span> <span class='mi'>0</span> <span class='p'>[</span><span class='mi'>1</span><span class='p'>,</span><span class='mi'>2</span><span class='p'>,</span><span class='mi'>3</span><span class='p'>,</span><span class='mi'>4</span><span class='p'>,</span><span class='mi'>5</span><span class='p'>]</span>
+</code></pre>
+</div>
+<p>However, that means the right hand side looks a lot like</p>
+<div class='highlight'><pre><code class='haskell'><span class='nf'>foldl</span> <span class='p'>(</span> <span class='o'>+</span> <span class='p'>)</span> <span class='mi'>1</span> <span class='p'>[</span><span class='mi'>2</span><span class='p'>,</span><span class='mi'>3</span><span class='p'>,</span><span class='mi'>4</span><span class='p'>,</span><span class='mi'>5</span><span class='p'>]</span>
+</code></pre>
+</div>
+<p>Hmm. Continuing the thought, your advanced algebra-fu will convince you that</p>
+<div class='highlight'><pre><code class='haskell'><span class='p'>(((</span><span class='mi'>1</span> <span class='o'>+</span> <span class='mi'>2</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>3</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>4</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>5</span> <span class='ow'>=</span> <span class='p'>((</span><span class='mi'>3</span> <span class='o'>+</span> <span class='mi'>3</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>4</span><span class='p'>)</span> <span class='o'>+</span> <span class='mi'>5</span>
+</code></pre>
+</div>
+<p>The right hand side of this equation looks a lot like</p>
+<div class='highlight'><pre><code class='haskell'><span class='nf'>foldl</span> <span class='p'>(</span> <span class='o'>+</span> <span class='p'>)</span> <span class='mi'>3</span> <span class='p'>[</span><span class='mi'>3</span><span class='p'>,</span><span class='mi'>4</span><span class='p'>,</span><span class='mi'>5</span><span class='p'>]</span>
+</code></pre>
+</div>
+<p>This suggests the following definition for <code>foldl</code>:</p>
+<div class='highlight'><pre><code class='haskell'><span class='nf'>foldl</span> <span class='n'>f</span> <span class='n'>z</span> <span class='kt'>[]</span> <span class='ow'>=</span> <span class='n'>z</span>
+<span class='nf'>foldl</span> <span class='n'>f</span> <span class='n'>z</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='n'>xs</span><span class='p'>)</span> <span class='ow'>=</span> <span class='n'>foldl</span> <span class='n'>f</span> <span class='p'>(</span><span class='n'>f</span> <span class='n'>z</span> <span class='n'>x</span><span class='p'>)</span> <span class='n'>xs</span>
+</code></pre>
+</div>
+<p>The left fold peels off the first element of the list, <code>x</code>, and feeds it to the folding function, <code>f</code>, along with the previous starter value, <code>z</code>. The result is then passed into the recursive call as the new starter value. Once the list is exhausted, the fully accumulated starter value is returned.</p>
+
+<p>To my mind, the recursion behind the right fold is even simpler. Using more algebra-fu, notice that</p>
+<div class='highlight'><pre><code class='haskell'><span class='nf'>foldr</span> <span class='p'>(</span> <span class='o'>*</span> <span class='p'>)</span> <span class='mi'>1</span> <span class='p'>[</span><span class='mi'>1</span><span class='p'>,</span><span class='mi'>2</span><span class='p'>,</span><span class='mi'>3</span><span class='p'>,</span><span class='mi'>4</span><span class='p'>,</span><span class='mi'>5</span><span class='p'>]</span> <span class='ow'>=</span> <span class='mi'>1</span> <span class='o'>*</span> <span class='p'>(</span><span class='mi'>2</span> <span class='o'>*</span> <span class='p'>(</span><span class='mi'>3</span> <span class='o'>*</span> <span class='p'>(</span><span class='mi'>4</span> <span class='o'>*</span> <span class='p'>(</span><span class='mi'>5</span> <span class='o'>*</span> <span class='mi'>1</span><span class='p'>))))</span>
+                          <span class='ow'>=</span> <span class='mi'>1</span> <span class='o'>*</span> <span class='p'>(</span><span class='n'>foldr</span> <span class='p'>(</span> <span class='o'>*</span> <span class='p'>)</span> <span class='mi'>1</span> <span class='p'>[</span><span class='mi'>2</span><span class='p'>,</span><span class='mi'>3</span><span class='p'>,</span><span class='mi'>4</span><span class='p'>,</span><span class='mi'>5</span><span class='p'>])</span>
+</code></pre>
+</div>
+<p>This suggests the following definition:</p>
+<div class='highlight'><pre><code class='haskell'><span class='nf'>foldr</span> <span class='n'>f</span> <span class='n'>z</span> <span class='kt'>[]</span> <span class='ow'>=</span> <span class='n'>z</span>
+<span class='nf'>foldr</span> <span class='n'>f</span> <span class='n'>z</span> <span class='p'>(</span><span class='n'>x</span><span class='kt'>:</span><span class='n'>xs</span><span class='p'>)</span> <span class='ow'>=</span> <span class='n'>f</span> <span class='n'>x</span> <span class='p'>(</span><span class='n'>foldr</span> <span class='n'>f</span> <span class='n'>z</span> <span class='n'>xs</span><span class='p'>)</span>
+</code></pre>
+</div>
+<h2 id='back_to_ruby'>Back to Ruby</h2>
+
+<p>One of the fun things about Haskell is that it gives you a clean syntax and semantics for exploring recursion. Ruby is less encouraging of recursion, but it&#8217;s doable. As an exercise, what would left and right folds look like in Ruby? I really encourage you to stop reading and perform the translation yourself.</p>
+
+<p>Here&#8217;s how I might implement them, again as monkeypatches on <code>Array</code>:</p>
+<div class='highlight'><pre><code class='ruby'><span class='k'>class</span> <span class='nc'>Array</span>
+  <span class='k'>def</span> <span class='nf'>foldl</span> <span class='n'>z</span><span class='p'>,</span> <span class='o'>&amp;</span><span class='n'>f</span>
+    <span class='k'>if</span> <span class='n'>length</span> <span class='o'>==</span> <span class='mi'>0</span>
+      <span class='n'>z</span>
+    <span class='k'>else</span>
+      <span class='n'>drop</span><span class='p'>(</span><span class='mi'>1</span><span class='p'>)</span><span class='o'>.</span><span class='n'>foldl</span> <span class='n'>f</span><span class='o'>.</span><span class='n'>call</span><span class='p'>(</span><span class='n'>z</span><span class='p'>,</span> <span class='n'>first</span><span class='p'>),</span> <span class='o'>&amp;</span><span class='n'>f</span>
+    <span class='k'>end</span>
+  <span class='k'>end</span>
+
+  <span class='k'>def</span> <span class='nf'>foldr</span> <span class='n'>z</span><span class='p'>,</span> <span class='o'>&amp;</span><span class='n'>f</span>
+    <span class='k'>if</span> <span class='n'>length</span> <span class='o'>==</span> <span class='mi'>0</span>
+      <span class='n'>z</span>
+    <span class='k'>else</span>
+      <span class='n'>f</span><span class='o'>.</span><span class='n'>call</span> <span class='n'>first</span><span class='p'>,</span> <span class='p'>(</span><span class='n'>drop</span><span class='p'>(</span><span class='mi'>1</span><span class='p'>)</span><span class='o'>.</span><span class='n'>foldr</span> <span class='n'>z</span><span class='p'>,</span> <span class='o'>&amp;</span><span class='n'>f</span><span class='p'>)</span>
+    <span class='k'>end</span>
+  <span class='k'>end</span>
+<span class='k'>end</span>
+</code></pre>
+</div>
+<p>I think the biggest takeaway from this is that higher order programming is awkward in Ruby because blocks aren&#8217;t first class citizens. We need to use the ampersand operator to grab a <code>Proc</code>-ified version of the block so that we can reference it in the rest of the method. Not the end of the world, but good luck passing two functions.</p>
+
+<h2 id='parting_thoughts'>Parting thoughts</h2>
+
+<p>There are lots of other interesting things to learn about folds. I&#8217;d encourage you to check out <a href='http://learnyouahaskell.com/higher-order-functions'>Learn You a Haskell</a>, as well as Graham Hutton&#8217;s <a href='http://www.cs.nott.ac.uk/~gmh/fold.pdf'>tutorial</a>, which includes all sorts of cool examples of implementing other functions in terms of folds.</p>
+</div>
+
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    
+      <li><span>03 May 2011</span> &raquo; <a href="/2011/05/03/special-relativity-is-subtle.html">Special relativity is subtle!</a></li>
+    
+      <li><span>20 Apr 2011</span> &raquo; <a href="/2011/04/20/some-fun-with-recursion.html">Some fun with recursion, and a little Haskell</a></li>
+    
+  </ul>
+</div>
+
+  
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Alan O'Donnell<br />
+        alan.m.odonnell@gmail.com
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="http://github.com/happy4crazy/">github.com/happy4crazy</a><br />
+      </p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
