@@ -63,8 +63,8 @@ The code loops over every element in the array you want to reduce, updating the
 value of the passed argument each time. At the very end, it returns the fully
 accumulated `acc` value. Also, notice that it uses a bit of syntactic sugar:
 generally speaking (emphasis on generally), Ruby will let you get away without
-appending an explicit receiver to a method call if that receiver is the current
-object, `self`. So the bare `each` is equivalent to `self.each`.
+prepending an explicit receiver to a method call if that receiver is the
+current object, `self`. So the bare `each` is equivalent to `self.each`.
 
 ## Some background on folds in Haskell
 
